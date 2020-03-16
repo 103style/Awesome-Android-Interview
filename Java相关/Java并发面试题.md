@@ -289,29 +289,32 @@ Java内存模型规定了所有字段（这些字段包括实例字段、静态�
 
 举个例子：
 
-    private volatile int start = 0;
+```
+private volatile int start = 0;
 
-    private void volatile Keyword() {
+private void test() throws Exception{
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < 10; i++) {
-                    start++;
-                }
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            for (int i = 0; i < 100000; i++) {
+                start++;
             }
-        };
-
-        for (int i = 0; i < 10; i++) {
-            Thread thread = new Thread(runnable);
-            thread.start();
         }
-        Log.d(TAG, "start = " + start);
+    };
+
+    for (int i = 0; i < 10; i++) {
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
+    Thread.sleep(1000);//避免 test方法所在线程 比 新开的10个线程先执行完
+    Log.d(TAG, "start = " + start);
+}
+```
 
 ![image](https://github.com/guoxiaoxing/android-open-source-project-analysis/raw/master/art/native/process/volatile_thread_safe.png)
 
-这段代码启动了10个线程，每次10次自增，按道理最终结果应该是100，但是结果并非如此。
+这段代码启动了10个线程，每次100000次自增，按道理最终结果应该是1000000，但是结果并非如此。
 
 为什么会这样？
 
